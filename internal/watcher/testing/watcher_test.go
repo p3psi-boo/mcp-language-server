@@ -94,13 +94,15 @@ func TestWatcherBasicFunctionality(t *testing.T) {
 		waitCtx, waitCancel := context.WithTimeout(ctx, 2*time.Second)
 		defer waitCancel()
 
-		if !mockClient.WaitForEvent(waitCtx) {
-			t.Logf("Events received so far: %+v", mockClient.GetEvents())
-			t.Fatal("Timed out waiting for file creation event")
+		uri := "file://" + filePath
+		for mockClient.CountEvents(uri, protocol.FileChangeType(protocol.Created)) == 0 {
+			if !mockClient.WaitForEvent(waitCtx) {
+				t.Logf("Events received so far: %+v", mockClient.GetEvents())
+				t.Fatal("Timed out waiting for file creation event")
+			}
 		}
 
 		// Check for create notification
-		uri := "file://" + filePath
 		count := mockClient.CountEvents(uri, protocol.FileChangeType(protocol.Created))
 		if count == 0 {
 			t.Errorf("No create event received for %s", filePath)
@@ -125,12 +127,14 @@ func TestWatcherBasicFunctionality(t *testing.T) {
 		waitCtx, waitCancel := context.WithTimeout(ctx, 2*time.Second)
 		defer waitCancel()
 
-		if !mockClient.WaitForEvent(waitCtx) {
-			t.Fatal("Timed out waiting for file modification event")
+		uri := "file://" + filePath
+		for mockClient.CountEvents(uri, protocol.FileChangeType(protocol.Changed)) == 0 {
+			if !mockClient.WaitForEvent(waitCtx) {
+				t.Fatal("Timed out waiting for file modification event")
+			}
 		}
 
 		// Check for change notification
-		uri := "file://" + filePath
 		count := mockClient.CountEvents(uri, protocol.FileChangeType(protocol.Changed))
 		if count == 0 {
 			t.Errorf("No change event received for %s", filePath)
@@ -155,12 +159,14 @@ func TestWatcherBasicFunctionality(t *testing.T) {
 		waitCtx, waitCancel := context.WithTimeout(ctx, 2*time.Second)
 		defer waitCancel()
 
-		if !mockClient.WaitForEvent(waitCtx) {
-			t.Fatal("Timed out waiting for file deletion event")
+		uri := "file://" + filePath
+		for mockClient.CountEvents(uri, protocol.FileChangeType(protocol.Deleted)) == 0 {
+			if !mockClient.WaitForEvent(waitCtx) {
+				t.Fatal("Timed out waiting for file deletion event")
+			}
 		}
 
 		// Check for delete notification
-		uri := "file://" + filePath
 		count := mockClient.CountEvents(uri, protocol.FileChangeType(protocol.Deleted))
 		if count == 0 {
 			t.Errorf("No delete event received for %s", filePath)
@@ -322,12 +328,14 @@ func TestGitignoreIntegration(t *testing.T) {
 		waitCtx, waitCancel := context.WithTimeout(ctx, 2*time.Second)
 		defer waitCancel()
 
-		if !mockClient.WaitForEvent(waitCtx) {
-			t.Fatal("Timed out waiting for file creation event")
+		uri := "file://" + filePath
+		for mockClient.CountEvents(uri, protocol.FileChangeType(protocol.Created)) == 0 {
+			if !mockClient.WaitForEvent(waitCtx) {
+				t.Fatal("Timed out waiting for file creation event")
+			}
 		}
 
 		// Check that notification was sent
-		uri := "file://" + filePath
 		count := mockClient.CountEvents(uri, protocol.FileChangeType(protocol.Created))
 		if count == 0 {
 			t.Errorf("No create event received for non-ignored file %s", filePath)

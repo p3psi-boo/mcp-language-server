@@ -374,6 +374,12 @@ func matchesSimpleGlob(pattern, path string) bool {
 	if strings.HasPrefix(pattern, "**/") {
 		rest := strings.TrimPrefix(pattern, "**/")
 
+		// "**/*" is commonly used by LSP clients to mean "watch everything".
+		// Treat it as a match for any path.
+		if rest == "" || rest == "*" {
+			return true
+		}
+
 		// If the rest is a simple file extension pattern like *.go
 		if strings.HasPrefix(rest, "*.") {
 			ext := strings.TrimPrefix(rest, "*")

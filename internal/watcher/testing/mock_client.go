@@ -139,8 +139,18 @@ func (m *MockLSPClient) CountEvents(uri string, eventType protocol.FileChangeTyp
 // ResetEvents clears the recorded events
 func (m *MockLSPClient) ResetEvents() {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 	m.events = []FileEvent{}
+	m.mu.Unlock()
+
+	// Drain any pending signals so WaitForEvent reflects new events only.
+	for {
+		select {
+		case <-m.eventsReceived:
+			// keep draining
+		default:
+			return
+		}
+	}
 }
 
 // WaitForEvent waits for at least one event to be received or context to be done

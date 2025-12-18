@@ -187,11 +187,13 @@ exact_file.txt
 		waitCtx, waitCancel := context.WithTimeout(ctx, 2*time.Second)
 		defer waitCancel()
 
-		if !mockClient.WaitForEvent(waitCtx) {
-			t.Fatal("Timed out waiting for file creation event")
+		uri := "file://" + filePath
+		for mockClient.CountEvents(uri, protocol.FileChangeType(protocol.Created)) == 0 {
+			if !mockClient.WaitForEvent(waitCtx) {
+				t.Fatal("Timed out waiting for file creation event")
+			}
 		}
 
-		uri := "file://" + filePath
 		count := mockClient.CountEvents(uri, protocol.FileChangeType(protocol.Created))
 		if count == 0 {
 			t.Errorf("No create event received for non-ignored file %s", filePath)
